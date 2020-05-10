@@ -136,13 +136,13 @@ extension AnotherMockHttpClient {
             .tryMap({ data -> T in
                 do {
                     guard let serializedObject = try JSONSerialization.jsonObject(with: data, options: []) as? T else {
-                        let error = AnotherMockHttpClient.createMockError("Could not deserialize json fot the given type")
-                        throw NetworkError.unknown(cause: error)
+                        let mockError = AnotherMockHttpClientError.couldntConvertGivenJson(String(describing: T.self))
+                        throw NetworkError.unknown(cause: mockError)
                     }
                     return serializedObject
                 } catch {
-                    let error = AnotherMockHttpClient.createMockError("Error deserializing json")
-                    throw NetworkError.unknown(cause: error)
+                    let mockError = AnotherMockHttpClientError.jsonSerializationError(error)
+                    throw NetworkError.unknown(cause: mockError)
                 }
             })
             .mapError({ error -> NetworkError in
@@ -152,21 +152,6 @@ extension AnotherMockHttpClient {
                 return NetworkError.unknown(cause: error)
             })
             .eraseToAnyPublisher()
-    }
-    
-}
-
-// MARK: - Static Helpers
-extension AnotherMockHttpClient {
-    
-    static func createMockError(_ failureReason: String) -> Error {
-        var userInfo: [String: Any] = [:]
-        
-        userInfo[NSLocalizedDescriptionKey] = "This is just a mocked message"
-        userInfo[NSLocalizedFailureReasonErrorKey] = failureReason
-        userInfo[NSLocalizedRecoverySuggestionErrorKey] = "Check the mocked response"
-        
-        return NSError(domain: "AnotherMockHttpClient", code: -1, userInfo: userInfo)
     }
     
 }

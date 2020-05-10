@@ -22,40 +22,12 @@
 // SOFTWARE.
 //
 
-import AnotherSwiftCommonLib
-import XCTest
-@testable import AnotherMockHttpClient
+import Foundation
 
-final class BundleMockReadStrategyTests: XCTestCase {
-    
-    func testExample() {
-        
-        DataMockReadStrategy.makeWithJsonValue(
-            json: [
-                "id": "1",
-                "name": "jorge"
-            ]
-        ),
-        DataMockReadStrategy.makeWithJsonValue(
-            json: [
-                "id": "1",
-                "name": "jorge"
-            ]
-        ),
-        
-        DataMockReadStrategy.makeWithJsonValue(
-            json: [
-                [
-                    "id": "1",
-                    "name": "jorge"
-                ]
-            ]
-        )
-        
-    }
-
-    static var allTests = [
-        ("testExample", testExample),
-    ]
-    
+public enum AnotherMockHttpClientError: Error {
+    case couldntConvertGivenJson(_ type: String)
+    case errorEncodingString(_ value: String)
+    case jsonSerializationNotValid(_ object: Any)
+    case jsonSerializationError(_ cause: Error)
+    case fileNotPresentInBundle(_ bundle: Bundle, _ fileName: String, _ extension: String)
 }

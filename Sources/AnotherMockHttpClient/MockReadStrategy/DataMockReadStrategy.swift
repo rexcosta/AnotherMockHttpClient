@@ -45,25 +45,31 @@ extension DataMockReadStrategy {
     /// Creates a MockReadStrategy to use the data from the given json object
     /// Internally it uses the JSONSerialization
     /// - Parameter json: the json to convert to Data
-    /// - Throws: It can throw any error associated with the JSONSerialization.data operation, also can throw if JSONSerialization.isValidJSONObject fails
+    /// - Throws:
+    ///   - `AnotherMockHttpClientError.jsonSerializationNotValid`  if JSONSerialization.isValidJSONObject fails
+    ///   - `AnotherMockHttpClientError.jsonSerializationError` Error associated with the JSONSerialization.data operation
     /// - Returns: a ready to use MockReadStrategyProtocol
-    static func makeWithJsonValue(json: Any) throws -> MockReadStrategyProtocol {
+    public static func makeWithJsonValue(json: Any) throws -> MockReadStrategyProtocol {
         guard JSONSerialization.isValidJSONObject(json) else {
-            throw AnotherMockHttpClient.createMockError("Trying to transform invalid json to data")
+            throw AnotherMockHttpClientError.jsonSerializationNotValid(json)
         }
-        let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        return DataMockReadStrategy(data: data)
+        do {
+            let data = try JSONSerialization.data(withJSONObject: json, options: [])
+            return DataMockReadStrategy(data: data)
+        } catch {
+            throw AnotherMockHttpClientError.jsonSerializationError(error)
+        }
     }
     
     /// Creates a MockReadStrategy to use the data from the given string object
     /// - Parameters:
     ///   - value: the string value to convert to Data
     ///   - encoding: the encoding to use on the string
-    /// - Throws: can throw a informative error if the String -> Data fails
+    /// - Throws: `AnotherMockHttpClientError.errorEncodingString` if the String -> Data fails
     /// - Returns: a ready to use MockReadStrategyProtocol
-    static func makeWithString(value: String, encoding: String.Encoding) throws -> MockReadStrategyProtocol {
+    public static func makeWithString(value: String, encoding: String.Encoding) throws -> MockReadStrategyProtocol {
         guard let data = value.data(using: encoding) else {
-            throw AnotherMockHttpClient.createMockError("Couldn't create data for the given string value")
+            throw AnotherMockHttpClientError.errorEncodingString(value)
         }
         return DataMockReadStrategy(data: data)
     }

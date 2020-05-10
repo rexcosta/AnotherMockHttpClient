@@ -78,8 +78,8 @@ MockOverrideCompareStrategy is a MockOverrideStrategy to return NetworkRequest.d
 ## MockReadStrategyProtocol
 Protocol that defines a strategy to read Data or Error to be used in MockHttpRequestProtocol.
 
-### BundleMockReadStrategy
-BundleMockReadStrategy is a MockReadStrategy to return always a Data fetched from a file in a Bundle.
+### UrlMockReadStrategy
+UrlMockReadStrategy is a MockReadStrategy to return Data fetched from a URL, that can be file in a Bundle.
 
 ### DataMockReadStrategy
 DataMockReadStrategy is a MockReadStrategy to return always a Data object given at the constructor.

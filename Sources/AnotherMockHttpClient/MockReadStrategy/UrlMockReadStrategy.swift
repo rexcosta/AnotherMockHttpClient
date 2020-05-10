@@ -24,27 +24,16 @@
 
 import Foundation
 
-/// BundleMockReadStrategy is a MockReadStrategy to return always a Data fetched from a file in a Bundle
-public struct BundleMockReadStrategy: MockReadStrategyProtocol {
+/// UrlMockReadStrategy is a MockReadStrategy to return always a Data fetched from a file in a Bundle
+public struct UrlMockReadStrategy: MockReadStrategyProtocol {
     
-    private let bundle: Bundle
-    private let fileName: String
-    private let fileExtension: String
+    private let url: URL
     
-    public init(bundle: Bundle, fileName: String, fileExtension: String) {
-        self.bundle = bundle
-        self.fileName = fileName
-        self.fileExtension = fileExtension
+    public init(url: URL) {
+        self.url = url
     }
     
     public func read() -> Result<Data, Error> {
-        guard let url = bundle.url(forResource: fileName, withExtension: fileExtension) else {
-            let error = AnotherMockHttpClient.createMockError(
-                "Didn't find mock \(fileName) \(fileExtension) files"
-            )
-            return Result.failure(error)
-        }
-        
         do {
             let data = try Data(contentsOf: url)
             return Result.success(data)
@@ -56,13 +45,28 @@ public struct BundleMockReadStrategy: MockReadStrategyProtocol {
 }
 
 // MARK: Builders
-extension BundleMockReadStrategy {
+extension UrlMockReadStrategy {
     
     /// Creates a MockReadStrategy to read from the app main bundle using the given name and the .json extension
     /// - Parameter fileName: the name of the file to read
-    /// - Returns:a ready to use MockReadStrategyProtocol 
-    static func jsonInMainBundle(fileName: String) -> MockReadStrategyProtocol {
-        return BundleMockReadStrategy(bundle: .main, fileName: fileName, fileExtension: ".json")
+    /// - Returns:a ready to use MockReadStrategyProtocol
+    public static func jsonInMainBundle(fileName: String) throws -> MockReadStrategyProtocol {
+        return try makeFromBundle(.main, fileName: fileName, fileExtension: "json")
+    }
+    
+    /// Creates a MockReadStrategy to read from the given bundle using the given name and given extension
+    /// - Parameters:
+    ///   - bundle: the bundle to search
+    ///   - fileName: the filename to search in the given bundle
+    ///   - fileExtension: the file extension
+    /// - Throws:
+    ///   - `AnotherMockHttpClientError.fileNotPresentInBundle` if the file is not present in the bundle
+    /// - Returns: a ready to use MockReadStrategyProtocol
+    public static func makeFromBundle(_ bundle: Bundle, fileName: String, fileExtension: String) throws -> MockReadStrategyProtocol {
+        guard let url = bundle.url(forResource: fileName, withExtension: fileExtension) else {
+            throw AnotherMockHttpClientError.fileNotPresentInBundle(bundle, fileName, fileExtension)
+        }
+        return UrlMockReadStrategy(url: url)
     }
     
 }
